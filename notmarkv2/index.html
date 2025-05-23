@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Control de Robot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .cruceta {
+            display: grid;
+            grid-template-columns: repeat(3, 80px);
+            grid-template-rows: repeat(3, 80px);
+            gap: 10px;
+            margin: 20px auto;
+            width: max-content;
+        }
+        .cruceta button {
+            width: 80px;
+            height: 80px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        img {
+            width: 320px;
+            border: 2px solid #ccc;
+            margin-top: 30px;
+        }
+        h2 {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Control de Servos 360°</h1>
+
+<div class="cruceta">
+    <div></div>
+    <div><button onclick="sendCommand('servo2,adelante')">↑</button></div>
+    <div></div>
+
+    <div><button onclick="sendCommand('servo3,atras')">←</button></div>
+    <div><button onclick="sendCommand('detener')">■</button></div>
+    <div><button onclick="sendCommand('servo3,adelante')">→</button></div>
+
+    <div></div>
+    <div><button onclick="sendCommand('servo2,atras')">↓</button></div>
+    <div></div>
+</div>
+
+<h2>Control de Motores (L298N)</h2>
+
+<div class="cruceta">
+    <div></div>
+    <div><button onclick="sendCommand('adelante')">↑</button></div>
+    <div></div>
+
+    <div><button onclick="sendCommand('izquierda')">←</button></div>
+    <div><button onclick="sendCommand('detenerm')">■</button></div>
+    <div><button onclick="sendCommand('derecha')">→</button></div>
+
+    <div></div>
+    <div><button onclick="sendCommand('atras')">↓</button></div>
+    <div></div>
+</div>
+
+<img src="/camara" alt="Transmisión de Cámara">
+
+<script>
+function sendCommand(cmd) {
+    fetch(`/command/${cmd}`, {
+        method: 'GET',
+        keepalive: true,
+        headers: {
+            'Cache-Control': 'no-cache'
+        }
+    })
+    .then(() => console.log("Comando enviado:", cmd))
+    .catch(err => console.error("Error:", err));
+}
+</script>
+
+</body>
+</html>
