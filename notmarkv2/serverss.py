@@ -4,10 +4,12 @@ from socketserver import ThreadingMixIn
 import threading
 import os
 import serial
+import socket
 
-# === CONFIGURACIÓN ===
+# === CONFIGURACIÓN =
 HOST = "0.0.0.0"
 PORT = 8000
+
 
 # === CAPTURA DE VIDEO ===
 cap = cv2.VideoCapture(1)
@@ -34,6 +36,15 @@ except Exception as e:
     print(f"[!] Error al conectar con Arduino: {e}")
     arduino = None
 
+
+def read_from_arduino():
+    while True:
+        if arduino.in_waiting > 0:
+            line = arduino.readline().decode('utf-8').strip()
+            if line.startswith("gas,"):
+                gas_value = line.split(",")[1]
+                return gas_value
+            
 # === HANDLER DE PETICIONES ===
 class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -98,15 +109,19 @@ class RequestHandler(BaseHTTPRequestHandler):
                     self.send_response(200)
                     if file_path.endswith(".css"):
                         self.send_header("Content-type", "text/css")
-                    elif file_path.endswith(".js"):
-                        self.send_header("Content-type", "application/javascript")
+                    elif file_path.endswith(".jpg"):
+                        self.send_header("Content-type", "image/jpeg")
                     self.end_headers()
                     self.wfile.write(f.read())
             else:
                 self.send_error(404, "Archivo no encontrado")
-
-        else:
-            self.send_error(404, f"No encontrado: {self.path}")
+        
+        elif self.path == "/gas":
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            gas_value = read_from_arduino()
+            self.end_headers()
+            self.wfile.write(f"{gas_value}\n".encode())  # Ej: "512\n" o "180\n"
 
 # === SERVIDOR MULTIHILADO ===
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -115,13 +130,13 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 def run_server():
     server_address = (HOST, PORT)
     httpd = ThreadedHTTPServer(server_address, RequestHandler)
-    print(f"[Servidor web] Escuchando en http://{HOST}:{PORT}")
+    print(f"[Servidor web] Escuechando en http://{HOST}:{PORT}")
     httpd.serve_forever()
 
 if __name__ == "__main__":
-    # Hilo para captura de video
+    #Hilo para captura de video
     capture_thread = threading.Thread(target=capture_frames, daemon=True)
     capture_thread.start()
 
-    # Iniciar servidor web
+    #Iniciar servidor web
     run_server()
