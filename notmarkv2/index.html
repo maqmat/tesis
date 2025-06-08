@@ -2,72 +2,61 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Robot</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
-        .cruceta {
-            display: grid;
-            grid-template-columns: repeat(3, 80px);
-            grid-template-rows: repeat(3, 80px);
-            gap: 10px;
-            margin: 20px auto;
-            width: max-content;
-        }
-        .cruceta button {
-            width: 80px;
-            height: 80px;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        img {
-            width: 320px;
-            border: 2px solid #ccc;
-            margin-top: 30px;
-        }
-        h2 {
-            margin-top: 40px;
-        }
-    </style>
+    <link rel="stylesheet" href="static/styles.css">
 </head>
 <body>
 
-<h1>Control de Servos 360°</h1>
-
-<div class="cruceta">
-    <div></div>
-    <div><button onclick="sendCommand('servo2,adelante')">↑</button></div>
-    <div></div>
-
-    <div><button onclick="sendCommand('servo3,atras')">←</button></div>
-    <div><button onclick="sendCommand('detener')">■</button></div>
-    <div><button onclick="sendCommand('servo3,adelante')">→</button></div>
-
-    <div></div>
-    <div><button onclick="sendCommand('servo2,atras')">↓</button></div>
-    <div></div>
+<!-- === ENCABEZADO === -->
+<div class="header">
+    <img src="static/logo.jpg" alt="Logo" class="logo">
+    <div class="time">Sistema robótico de asistencia remota para atmósferas peligrosas
+    </div>
 </div>
 
-<h2>Control de Motores (L298N)</h2>
+<!-- === CONTENEDOR PRINCIPAL === -->
+<div class="content">
+    <!-- === Botón de gas === -->
+    <!-- === Cruceta de motores (izquierda) === -->
+    <div class="controls-motores">
+        <div class="cruceta">
+            <button onclick="sendCommand('adelante')">↑</button>
+            <button onclick="sendCommand('izquierda')">←</button>
+            <button onclick="sendCommand('derecha')">→</button>
+            <button onclick="sendCommand('detenerm')">■</button>
+            <button onclick="sendCommand('atras')">↓</button>
+        </div>
+    </div>
+    
+    <!-- === Cámara centrada === -->
+    <button class="gas-button" id="gas-status"></button>
+    <div class="camera-section">
+        <img src="/camara" alt="Cámara" class="camera">
+    </div>
 
-<div class="cruceta">
-    <div></div>
-    <div><button onclick="sendCommand('adelante')">↑</button></div>
-    <div></div>
+    <!-- === Cruceta de servos (derecha) === -->
+    <div class="controls-servos">
+        <div style="display: flex; align-items: flex-start;">
+            <div class="cruceta">
+                <button onclick="sendCommand('servo2,adelante')">↑</button>
+                <button onclick="sendCommand('servo3,atras')">←</button>
+                <button onclick="sendCommand('servo3,adelante')">→</button>
+                <button onclick="sendCommand('detener')">■</button>
+                <button onclick="sendCommand('servo2,atras')">↓</button>
+            </div>
+            <!-- Cruceta extra a la derecha -->
+            <div class="controls-extra">
+                <div class="cruceta-extra">
+                <button onclick="sendCommand('servo1,adelante')">↑</button>
+                <button onclick="sendCommand('servo1,atras')">↓</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div><button onclick="sendCommand('izquierda')">←</button></div>
-    <div><button onclick="sendCommand('detenerm')">■</button></div>
-    <div><button onclick="sendCommand('derecha')">→</button></div>
-
-    <div></div>
-    <div><button onclick="sendCommand('atras')">↓</button></div>
-    <div></div>
+    
 </div>
-
-<img src="/camara" alt="Transmisión de Cámara">
 
 <script>
 function sendCommand(cmd) {
@@ -81,6 +70,37 @@ function sendCommand(cmd) {
     .then(() => console.log("Comando enviado:", cmd))
     .catch(err => console.error("Error:", err));
 }
+
+// === ACTUALIZAR VALOR DEL SENSOR ===
+    // Función para consultar el sensor de gas
+function pollGasSensor() {
+    fetch('/gas')
+        .then(res => res.text())
+        .then(data => {
+            const gasDisplay = document.getElementById("gas-status");
+            let valor = data.trim();
+
+            if (!isNaN(valor)) {
+                if (valor > 400) {  // Ajusta este umbral según tu sensor
+                    gasDisplay.innerText = "Presencia de gas: Sí ⚠️";
+                    gasDisplay.style.color = "red";
+                } else {
+                    gasDisplay.innerText = "Presencia de gas: No";
+                    gasDisplay.style.color = "green";
+                }
+            } else {
+                gasDisplay.innerText = "[!] Error al leer el sensor";
+                gasDisplay.style.color = "gray";
+            }
+        })
+        .catch(err => {
+            console.error("[!] Error al obtener estado del gas:", err);
+        });
+}
+
+// Llamar cada segundo
+setInterval(pollGasSensor, 1000);
+
 </script>
 
 </body>
