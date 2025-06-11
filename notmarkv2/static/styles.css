@@ -1,0 +1,283 @@
+/* === ESTILO GLOBAL === */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        /* === ENCABEZADO === */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            width: 30px;
+            height: auto;
+        }
+
+        .time {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* === DISEÑO PRINCIPAL (Grid 3x3) === */
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 2fr 3fr ; /* 3 columnas */
+            grid-template-rows: auto auto auto;   /* 3 filas */
+            gap: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
+            grid-template-areas:
+                "motor camera servo"     /* Fila 1 */
+                "motor extra gas"       /* Fila 2 */
+                ".     .      gas";     /* Fila 3 */
+        }
+        /* === CÁMARA CENTRADA === */
+        .camera-section {
+            grid-area: camera;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .camera {
+            width: 100%;
+            max-width: 320px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+
+        /* === CRUCETA DE MOTORES (izquierda) === */
+        .controls-motores {
+            grid-area: motor;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .controls-motores .cruceta {
+            display: grid;
+            grid-template-columns: repeat(3, 40px);
+            grid-template-rows: repeat(3, 40px);
+            gap: 10px;
+            width: 190px;
+            height: 190px;
+            margin: 0 auto;
+        }
+
+                /* === NUEVA CRUCETA (extra) === */
+        .controls-extra {
+            grid-area: extra;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-left: 4px !important;
+        }
+
+        .cruceta-extra {
+            display: grid;
+            grid-template-columns: 40px;
+            grid-template-rows: repeat(2, 40px);
+            gap: 10px;
+            width: 40px;
+            height: 90px;
+            margin: 0 auto;
+        }
+
+        .cruceta-extra button {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            background-color: #FF6B35;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .controls-servos {
+            grid-area: servo;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 420px; /* Limita el ancho total del contenedor de servos */
+        }
+
+        .controls-servos .cruceta {
+            display: grid;
+            grid-template-columns: repeat(3, 40px);
+            grid-template-rows: repeat(3, 40px);
+            gap: 10px;
+            width: 190px;
+            height: 190px;
+            margin: 0 auto;
+        }
+        
+
+                /* Cruceta Servos */
+        .controls-servos .cruceta {
+            grid-template-areas:
+                ". arriba ."
+                "izquierda centro derecha"
+                ". abajo .";
+        }
+        
+        /* === BOTONES DE CRUCETAS === */
+        .cruceta button {
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            background-color: #FF6B35;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* === BOTÓN DE GAS === */
+        .gas-button {
+            grid-area: gas;
+            width: 90%;
+            max-width: 320px;
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #FF6B35;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        /* === POSICIÓN DE BOTONES EN CRUCETAS === */
+        /* Cruceta Motores */
+        .controls-motores .cruceta {
+            grid-template-areas:
+                ". arriba ."
+                "izquierda centro derecha"
+                ". abajo .";
+        }
+
+        .controls-motores .cruceta button:nth-child(1) {
+            grid-area: arriba;
+        }
+
+        /* ↑ */
+        .controls-motores .cruceta button:nth-child(2) {
+            grid-area: izquierda;
+        }
+
+        /* ← */
+        .controls-motores .cruceta button:nth-child(3) {
+            grid-area: derecha;
+        }
+
+        /* → */
+        .controls-motores .cruceta button:nth-child(4) {
+            grid-area: centro;
+        }
+
+        /* ■ */
+        .controls-motores .cruceta button:nth-child(5) {
+            grid-area: abajo;
+        }
+
+        /* ↓ */
+
+        /* Cruceta Servos */
+        .controls-servos .cruceta {
+            grid-template-areas:
+                ". arriba ."
+                "izquierda centro derecha"
+                ". abajo .";
+        }
+
+        .controls-servos .cruceta button:nth-child(1) {
+            grid-area: arriba;
+        }
+
+        .controls-servos .cruceta button:nth-child(2) {
+            grid-area: izquierda;
+        }
+
+        .controls-servos .cruceta button:nth-child(3) {
+            grid-area: derecha;
+        }
+
+        .controls-servos .cruceta button:nth-child(4) {
+            grid-area: centro;
+        }
+
+        .controls-servos .cruceta button:nth-child(5) {
+            grid-area: abajo;
+        }
+
+        /* Elimina o comenta esta regla para evitar doble separación */
+        /*
+        .controls-extra {
+            margin-left: 16px;
+        }
+        */
+
+        /* === MÓVIL HORIZONTAL === */
+        @media (min-width: 600px) and (orientation: landscape) {
+            .content {
+                width: 100%;
+                max-width: 100%;
+                padding: 20px;
+                grid-template-columns: 1fr 2fr 1fr;
+                grid-template-areas:
+                    "header header header"
+                    "motor  camera servo"
+                    ".      gas   .";
+            }
+
+            .camera-section {
+                max-width: 320px;
+            }
+
+            .controls-motores,
+            .controls-servos {
+                justify-content: center;
+                align-items: center;
+            }
+
+            .gas-button {
+                margin-top: 30px;
+            }
+        }
+
+        /* === PANTALLA GRANDE (PC) === */
+        @media (min-width: 768px) {
+            .content {
+                grid-template-columns: 1fr 2fr 1fr;
+                grid-template-areas:
+                    "header header header"
+                    "motor  camera servo"
+                    ".      gas   .";
+            }
+
+            .camera-section {
+                max-width: 320px;
+            }
+
+            .gas-button {
+                margin-top: 30px;
+            }
+        }
