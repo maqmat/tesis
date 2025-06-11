@@ -4,17 +4,17 @@
 Servo servo1;  // Pin 3
 Servo servo2;  // Pin 2
 Servo servo3;  // Pin 1
-#define pinS1 11
+#define pinS1 13
 #define pinS2 2
 #define pinS3 8
 // === MOTORES DC (L298N) ===
 const int IN1 = 4;   // Motor izquierdo
 const int IN2 = 5;
-const int ENA = 9;   // PWM M1
+const int ENA = 3;   // PWM M1
 
 const int IN3 = 6;   // Motor derecho
 const int IN4 = 7;
-const int ENB = 10;  // PWM M2
+const int ENB = 11;  // PWM M2
 
 // === SENSOR DE GAS ===
 const int GAS_PIN = A1;
@@ -35,9 +35,6 @@ void setup() {
   servo1.attach(pinS1);
   servo2.attach(pinS2);
   servo3.attach(pinS3);
-  servo1.write(90);
-  servo2.write(90);
-  servo3.write(90);
 
   // Motores
   pinMode(IN1, OUTPUT);
@@ -68,6 +65,7 @@ void loop() {
       //Serial.println(gas_value);
 
       delay(100);
+
   // === LECTURA DE COMANDOS SERIAL ===
   if (Serial.available() > 0) {
     String cmd = Serial.readStringUntil('\n');
@@ -75,17 +73,17 @@ void loop() {
 
     // === CONTROL DE SERVOS ===
     if (cmd.startsWith("servo1,adelante")) {
-      servo1.write(80);
+      servo1.write(85);
     } else if (cmd.startsWith("servo1,atras")) {
       servo1.write(90);
     } else if (cmd.startsWith("servo2,adelante")) {
-      servo2.write(110);
+      servo2.write(100);
     } else if (cmd.startsWith("servo2,atras")) {
       servo2.write(85);
     } else if (cmd.startsWith("servo3,adelante")) {
       servo3.write(85);
     } else if (cmd.startsWith("servo3,atras")) {
-      servo3.write(97);
+      servo3.write(100);
     } else if (cmd == "detener") {
       servo1.write(90);
       servo2.write(90);
@@ -144,7 +142,12 @@ void loop() {
     analogWrite(ENB, 0);
     digitalWrite(IN3, LOW);
     digitalWrite(IN4, LOW);
-  } else if (direccion == 1 || direccion == 2 || direccion == 3) { // adelante, derecha, izquierda
+  } else if (direccion == 1 || direccion == 2) { // adelante, derecha, izquierda
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+    analogWrite(ENB, pwm_der);
+
+  }else if (direccion == 3){
     digitalWrite(IN3, HIGH);
     digitalWrite(IN4, LOW);
     analogWrite(ENB, pwm_der);
