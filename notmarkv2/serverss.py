@@ -5,11 +5,11 @@ import threading
 import os
 import serial
 import socket
+import time
 
 # === CONFIGURACIÓN =
 HOST = "0.0.0.0"
 PORT = 8000
-
 
 # === CAPTURA DE VIDEO ===
 cap = cv2.VideoCapture(1)
@@ -27,6 +27,7 @@ def capture_frames():
         _, jpeg = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
         if _:
             last_frame = jpeg.tobytes()
+        # No delay aquí para máxima velocidad
 
 # === CONEXIÓN SERIAL DIRECTA CON ARDUINO ===
 try:
@@ -36,15 +37,20 @@ except Exception as e:
     print(f"[!] Error al conectar con Arduino: {e}")
     arduino = None
 
+# === LECTURA RÁPIDA DE GAS ===
+last_gas_value = "0"
 
-def read_from_arduino():
+def arduino_gas_reader():
+    global last_gas_value
     while True:
-        if arduino.in_waiting > 0:
+        if arduino and arduino.in_waiting > 0:
             line = arduino.readline().decode('utf-8').strip()
             if line.startswith("gas,"):
                 gas_value = line.split(",")[1]
-                return gas_value
-            
+                last_gas_value = gas_value
+        else:
+            time.sleep(0.01)  # Pequeño respiro para la CPU
+
 # === HANDLER DE PETICIONES ===
 class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -73,7 +79,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                         self.end_headers()
                         self.wfile.write(last_frame)
                         self.wfile.write(b"\r\n")
-                        self.wfile.flush()  # Forzar salida inmediata
+                        self.wfile.flush()
+                    time.sleep(0.02)  
             except:
                 print("[!] Cliente desconectado")
 
@@ -92,7 +99,6 @@ class RequestHandler(BaseHTTPRequestHandler):
             else:
                 print("[!] Arduino no disponible")
 
-            # Responder rápido y terminar conexión
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
             self.send_header("Content-Length", "2")
@@ -119,9 +125,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         elif self.path == "/gas":
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
-            gas_value = read_from_arduino()
             self.end_headers()
-            self.wfile.write(f"{gas_value}\n".encode())  # Ej: "512\n" o "180\n"
+            self.wfile.write(f"{last_gas_value}\n".encode())
 
 # === SERVIDOR MULTIHILADO ===
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -130,13 +135,18 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 def run_server():
     server_address = (HOST, PORT)
     httpd = ThreadedHTTPServer(server_address, RequestHandler)
-    print(f"[Servidor web] Escuechando en http://{HOST}:{PORT}")
+    print(f"[Servidor web] Escuchando en http://{HOST}:{PORT}")
     httpd.serve_forever()
 
 if __name__ == "__main__":
-    #Hilo para captura de video
+    # Hilo para captura de video
     capture_thread = threading.Thread(target=capture_frames, daemon=True)
     capture_thread.start()
 
-    #Iniciar servidor web
+    # Hilo para lectura de gas
+    if arduino:
+        gas_thread = threading.Thread(target=arduino_gas_reader, daemon=True)
+        gas_thread.start()
+
+    # Iniciar servidor web
     run_server()
