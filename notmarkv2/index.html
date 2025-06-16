@@ -21,11 +21,11 @@
     <!-- === Cruceta de motores (izquierda) === -->
     <div class="controls-motores">
         <div class="cruceta">
-            <button onclick="sendCommand('adelante')">↑</button>
-            <button onclick="sendCommand('izquierda')">←</button>
-            <button onclick="sendCommand('derecha')">→</button>
-            <button onclick="sendCommand('detenerm')">■</button>
-            <button onclick="sendCommand('atras')">↓</button>
+            <button onclick="sendCommand('adelante')">?</button>
+            <button onclick="sendCommand('izquierda')">?</button>
+            <button onclick="sendCommand('derecha')">?</button>
+            <button onclick="sendCommand('detenerm')">¦</button>
+            <button onclick="sendCommand('atras')">?</button>
         </div>
     </div>
     
@@ -39,17 +39,17 @@
     <div class="controls-servos">
         <div style="display: flex; align-items: flex-start;">
             <div class="cruceta">
-                <button onclick="sendCommand('servo2,adelante')">↑</button>
-                <button onclick="sendCommand('servo1,atras')">←</button>
-                <button onclick="sendCommand('servo1,adelante')">→</button>
-                <button onclick="sendCommand('detener')">■</button>
-                <button onclick="sendCommand('servo2,atras')">↓</button>
+                <button onclick="sendCommand('servo2,atras')">?</button>
+                <button onclick="sendCommand('servo1,atras')">?</button>
+                <button onclick="sendCommand('servo1,adelante')">?</button>
+                <button onclick="sendCommand('detener')">¦</button>
+                <button onclick="sendCommand('servo2,adelante')">?</button>
             </div>
             <!-- Cruceta extra a la derecha -->
             <div class="controls-extra">
                 <div class="cruceta-extra">
-                <button onclick="sendCommand('servo3,adelante')">↑</button>
-                <button onclick="sendCommand('servo3,atras')">↓</button>
+                <button onclick="sendCommand('servo3,adelante')">?</button>
+                <button onclick="sendCommand('servo3,atras')">?</button>
                 </div>
             </div>
         </div>
@@ -72,20 +72,21 @@ function sendCommand(cmd) {
 }
 
 // === ACTUALIZAR VALOR DEL SENSOR ===
-    // Función para consultar el sensor de gas
+// Función para consultar el sensor de gas
 function pollGasSensor() {
     fetch('/gas')
         .then(res => res.text())
         .then(data => {
             const gasDisplay = document.getElementById("gas-status");
-            let valor = data.trim();
+            let valor = parseInt(data.trim());
 
             if (!isNaN(valor)) {
-                if (valor > 400) {  // Ajusta este umbral según tu sensor
-                    gasDisplay.innerText = "Presencia de gas: Sí ⚠️";
+                // Suponiendo que el sensor va de 0 a 1023
+                let porcentaje = Math.round((valor / 1023) * 100);
+                gasDisplay.innerText = `Gas: ${porcentaje}% (${valor})`;
+                if (valor > 450) {  // Ajusta este umbral según tu sensor
                     gasDisplay.style.color = "red";
                 } else {
-                    gasDisplay.innerText = "Presencia de gas: No";
                     gasDisplay.style.color = "green";
                 }
             } else {
@@ -100,7 +101,6 @@ function pollGasSensor() {
 
 // Llamar cada segundo
 setInterval(pollGasSensor, 1000);
-
 </script>
 
 </body>
