@@ -6,59 +6,89 @@
     <title>Control de Robot</title>
     <link rel="stylesheet" href="static/styles.css">
 </head>
-<body>
-
 <!-- === ENCABEZADO === -->
-<div class="header">
-    <img src="static/logo.jpg" alt="Logo" class="logo">
-    <div class="time">Sistema robótico de asistencia remota para atmósferas peligrosas
-    </div>
-</div>
+<body>
+    
+    <nav class="header">
+        <img src="static/logo.jpg" alt="Logo" class="logo">
+        <div class="time">Sistema robótico de asistencia remota para atmósferas peligrosas
+        </div>
+    </nav>
 
 <!-- === CONTENEDOR PRINCIPAL === -->
 <div class="content">
-    <!-- === Botón de gas === -->
     <!-- === Cruceta de motores (izquierda) === -->
     <div class="controls-motores">
         <div class="cruceta">
-            <button onclick="sendCommand('adelante')">?</button>
-            <button onclick="sendCommand('izquierda')">?</button>
-            <button onclick="sendCommand('derecha')">?</button>
-            <button onclick="sendCommand('detenerm')">¦</button>
-            <button onclick="sendCommand('atras')">?</button>
+            <button onclick="sendCommand('adelante')">↑</button>
+            <button onclick="sendCommand('izquierda')">←</button>
+            <button onclick="sendCommand('derecha')">→</button>
+            <button onclick="sendCommand('detenerm')">■</button>
+            <button onclick="sendCommand('atras')">↓</button>
         </div>
     </div>
     
     <!-- === Cámara centrada === -->
-    <button class="gas-button" id="gas-status"></button>
     <div class="camera-section">
-        <img src="/camara" alt="Cámara" class="camera">
+        <div class="display">
+            <img src="camara" alt="Cámara" class="camera">
+        </div>
     </div>
 
     <!-- === Cruceta de servos (derecha) === -->
     <div class="controls-servos">
         <div style="display: flex; align-items: flex-start;">
             <div class="cruceta">
-                <button onclick="sendCommand('servo2,atras')">?</button>
-                <button onclick="sendCommand('servo1,atras')">?</button>
-                <button onclick="sendCommand('servo1,adelante')">?</button>
-                <button onclick="sendCommand('detener')">¦</button>
-                <button onclick="sendCommand('servo2,adelante')">?</button>
-            </div>
-            <!-- Cruceta extra a la derecha -->
-            <div class="controls-extra">
-                <div class="cruceta-extra">
-                <button onclick="sendCommand('servo3,adelante')">?</button>
-                <button onclick="sendCommand('servo3,atras')">?</button>
-                </div>
+                <button onclick="sendCommand('servo2,atras')">↑</button>
+                <button onclick="sendCommand('servo1,atras')">←</button>
+                <button onclick="sendCommand('servo1,adelante')">→</button>
+                <button onclick="sendCommand('detener')">■</button>
+                <button onclick="sendCommand('servo2,adelante')">↓</button>
             </div>
         </div>
     </div>
 
+    <!-- Sensor de gas y botón de luz -->
+    <div style="grid-area: gas; display: flex; flex-direction: column; align-items: center;">
+        <button class="gas-button" id="gas-status"></button>
+        <button class="light-button" id="light-btn" onclick="toggleLight()">Prender luz</button>
+    </div>
     
 </div>
 
 <script>
+let lightOn = false;
+
+// Actualiza el valor del sensor de gas
+function pollGasSensor() {
+    fetch('/gas')
+        .then(res => res.text())
+        .then(data => {
+            const gasDisplay = document.getElementById("gas-status");
+            let valor = parseInt(data.trim());
+
+            if (!isNaN(valor)) {
+                let porcentaje = Math.round((valor / 1023) * 100);
+                gasDisplay.innerText = `Gas: ${porcentaje}% (${valor})`;
+                if (valor > 450) {
+                    gasDisplay.style.color = "red";
+                } else {
+                    gasDisplay.style.color = "green";
+                }
+            } else {
+                gasDisplay.innerText = "[!] Error al leer el sensor";
+                gasDisplay.style.color = "gray";
+            }
+        })
+        .catch(err => {
+            document.getElementById("gas-status").innerText = "[!] Error al obtener estado del gas";
+            document.getElementById("gas-status").style.color = "gray";
+        });
+}
+
+// Llamar cada segundo
+setInterval(pollGasSensor, 1000);
+
 function sendCommand(cmd) {
     fetch(`/command/${cmd}`, {
         method: 'GET',
@@ -71,36 +101,19 @@ function sendCommand(cmd) {
     .catch(err => console.error("Error:", err));
 }
 
-// === ACTUALIZAR VALOR DEL SENSOR ===
-// Función para consultar el sensor de gas
-function pollGasSensor() {
-    fetch('/gas')
-        .then(res => res.text())
-        .then(data => {
-            const gasDisplay = document.getElementById("gas-status");
-            let valor = parseInt(data.trim());
-
-            if (!isNaN(valor)) {
-                // Suponiendo que el sensor va de 0 a 1023
-                let porcentaje = Math.round((valor / 1023) * 100);
-                gasDisplay.innerText = `Gas: ${porcentaje}% (${valor})`;
-                if (valor > 450) {  // Ajusta este umbral según tu sensor
-                    gasDisplay.style.color = "red";
-                } else {
-                    gasDisplay.style.color = "green";
-                }
-            } else {
-                gasDisplay.innerText = "[!] Error al leer el sensor";
-                gasDisplay.style.color = "gray";
-            }
-        })
-        .catch(err => {
-            console.error("[!] Error al obtener estado del gas:", err);
-        });
+// === BOTÓN DE LUZ ===
+function toggleLight() {
+    const btn = document.getElementById("light-btn");
+    if (!lightOn) {
+        sendCommand('luzp');
+        btn.innerText = "Apagar luz";
+        lightOn = true;
+    } else {
+        sendCommand('lusa');
+        btn.innerText = "Prender luz";
+        lightOn = false;
+    }
 }
-
-// Llamar cada segundo
-setInterval(pollGasSensor, 1000);
 </script>
 
 </body>
